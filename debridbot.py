@@ -45,25 +45,7 @@ def isAdmin(var):
         return True
     else:
         return False
-def debridit(link):
-    session = requests.session()
-        # Authenticate
-    r = session.get(URL)
-    initial_link = 'http://www.alldebrid.com/service.php?json=true&link=%s'%(link)
-        # Try accessing a page that requires you to be logged in
-        #bot.send_message(cid, 'http://www.alldebrid.com/service.php?json=true&link=%s'%(message.text))
-    r = session.get(initial_link)
-    var= str(r.content)
-    words = var.split(",")
-        #print words[0]
-    #check empty 
-    link = words[0].split("\"")
-    final_link = link[3].replace("\\","")
-    if str(final_link[-1:]) == '?':
-        bot.send_message(cid, 'link non valido')
-    else:
-        bot.send_message(cid, final_link)
-        
+
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):

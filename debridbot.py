@@ -103,6 +103,8 @@ def link(m):
     words = var.split(",")
         #print words[0]
     link = words[0].split("\"")
+    if not link[3]:
+        link[3] = str('nonvalid?')
     final_link = link[3].replace("\\","")
     if str(final_link[-1:]) == '?':
         bot.send_message(cid, 'link non valido')

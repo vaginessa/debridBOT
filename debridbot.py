@@ -5,6 +5,7 @@
 #pip install psutil
 #pip install requests
 import telebot
+import subprocess
 import psutil
 import sys
 import requests
@@ -15,12 +16,12 @@ sys.setdefaultencoding("utf-8")
 
 #admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
 API_TOKEN = 'token'
-URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxx&login_password=xxxxxx'
+URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxxxx&login_password=xxxxxxxx'
 PROCNAME = "a.exe"
 bot = telebot.TeleBot(API_TOKEN)
 
 admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
-
+log = [line.rstrip('\n') for line in open('log.txt','rt')]
 
 def addAdmin(name,id):
     global admin
@@ -28,7 +29,14 @@ def addAdmin(name,id):
         f.write("\n"+str(name)+"\n"+str(id))
     #refresh admin list
     admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
-        
+
+def logLink(name,id,OrigLink,DebridLink):
+    global log
+    with open('log.txt', 'a+') as f:
+        f.write(str(name)+"|"+str(id)+"|"+str(OrigLink)+"|"+str(DebridLink)+"\n")
+    #refresh admin list
+    log = [line.rstrip('\n') for line in open('log.txt','rt')]
+    
 def isAdmin(var):
     #bot.send_message(var, "%s"%(var))
     #bot.send_message(var, "%s"%(admin))
@@ -48,12 +56,14 @@ def debridit(link):
     var= str(r.content)
     words = var.split(",")
         #print words[0]
+    #check empty 
     link = words[0].split("\"")
     final_link = link[3].replace("\\","")
     if str(final_link[-1:]) == '?':
         bot.send_message(cid, 'link non valido')
     else:
         bot.send_message(cid, final_link)
+        
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -83,13 +93,15 @@ def id(m):
 @bot.message_handler(commands=['link'])
 def link(m):
     cid = m.chat.id
+    name = m.from_user.first_name
     if len(m.text.split()) != 2:
-        bot.send_message(cid, " /addAdmin <LINK>")
+        bot.send_message(cid, " /link <LINK>")
         return
     try:
         link = str(m.text.split()[1])
+        origLink = link 
     except:
-        bot.send_message(cid, " /addAdmin <LINK>")
+        bot.send_message(cid, " /link <LINK>")
         return
             # Start a session so we can have persistant cookies
     session = requests.session()
@@ -101,7 +113,7 @@ def link(m):
     r = session.get(initial_link)
     var= str(r.content)
     words = var.split(",")
-        #print words[0]
+    #bot.send_message(cid,words[0])
     link = words[0].split("\"")
     if not link[3]:
         link[3] = str('nonvalid?')
@@ -110,6 +122,7 @@ def link(m):
         bot.send_message(cid, 'link non valido')
     else:
         bot.send_message(cid, final_link)
+        logLink(name,cid,origLink,final_link)
     pass
 
 

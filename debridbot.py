@@ -108,34 +108,19 @@ def linkv2(m):
     markup = types.InlineKeyboardMarkup()
     link = str(m.text)
     origLink = link 
-    
-            # Start a session so we can have persistant cookies
     session = requests.session()
-        # Authenticate
     r = session.get(URL)
-    initial_link = 'http://www.alldebrid.com/service.php?json=true&link=%s'%(link)
-        # Try accessing a page that requires you to be logged in
-        #bot.send_message(cid, 'http://www.alldebrid.com/service.php?json=true&link=%s'%(message.text))
+    initial_link = 'http://www.alldebrid.com/service.php?pseudo=gabb96&password=scania&link=%s&view=1'%(link)
     r = session.get(initial_link)
-    var= str(r.content)
-    words = var.split(",")
-    #bot.send_message(cid,words[0])
-    link = words[0].split("\"")
-    if not link[3]:
-        link[3] = str('nonvalid?')
-    final_link = link[3].replace("\\","")
-    if str(final_link[-1:]) == '?':
-        bot.send_message(cid, 'link non valido o host non supportato')
+    final_link= str(r.content)
+    if str(final_link[0]) != 'h':
+        bot.send_message(cid, 'link non valido o host non supportato') 
     else:
-        #link shorted
-        #markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(shortener.short(final_link))))
-        #link full
         markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(final_link)))
         bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
-        #bot.send_message(cid, final_link)
-        #bot.send_message(cid, shortener.short(final_link))
-        #bot.send_message(cid, qrcode)
         logLink(name,cid,origLink,final_link)
+    
+    
     pass
 
 

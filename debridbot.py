@@ -13,14 +13,15 @@ import requests
 from pyshorteners import Shortener
 from pprint import pprint
 from telebot import types
+from telebot import util
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
 #admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
 API_TOKEN = 'token'
-URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxxx&login_password=xxxxxx'
+URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxx&login_password=xxxxxx'
 PROCNAME = "a.exe"
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot('xxxxxxx')
 #google shortner api
 api_key='xxxxxxx'
 shortener = Shortener('Google', api_key=api_key)
@@ -50,15 +51,27 @@ def isAdmin(var):
     else:
         return False        
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start','help'])
 def send_welcome(message):
     cid = message.chat.id
+    slash = "/"
+    markup = types.ReplyKeyboardMarkup(selective=False)
+    #bot.send_message( cid, "Questo bot permette di generare link premium, supporta tutti gli Hoster di ALLDEBRID")
     if isAdmin(cid):
-        bot.send_message(cid,"ok")
+        bot.send_message(cid,"sei admin")
+        itembtn1 = slash + "id"
+        itembtn2 = slash + "addAdmin"
+        itembtn3 = slash + "log"
+        markup.add(itembtn1, itembtn2,itembtn3)
+        bot.send_message(cid, "Ciao %s hai eseguito l'accesso come admin, cosa vuoi fare?"%(message.from_user.first_name), reply_markup=markup)
+        #vedere log
+        
         
     else:
-        bot.send_message(cid, "NON HAI I PERMESSI")
-    
+        bot.send_message( cid, "Questo bot permette di generare link premium,\n supporta tutti gli Hoster di ALLDEBRID")
+        itembtn1 = slash + "id"
+        markup.add(itembtn1)
+        #bot.send_message(cid, "Ciao %s non sei admin, se lo vuoi diventare manda il tuo Dream"%(message.from_user.first_name), reply_markup=markup)
 
 @bot.message_handler(commands=['id'])
 def id(m):
@@ -76,7 +89,18 @@ def id(m):
         bot.send_message( cid, "Ciao %s , NON sei un admin\n" %(m.from_user.first_name))
     pass
 
-#------------------------------
+@bot.message_handler(commands=['log'])
+def log(m):
+    cid = m.chat.id
+    if isAdmin(cid) :
+        
+        doc = open('log.txt', 'rb')
+        bot.send_document(cid, doc)
+    else:
+        bot.send_message( cid, "Ciao %s , NON sei un admin\n" %(m.from_user.first_name))
+    pass
+
+
 @bot.message_handler(regexp='((https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)')
 def linkv2(m):
     cid = m.chat.id
@@ -103,107 +127,17 @@ def linkv2(m):
     if str(final_link[-1:]) == '?':
         bot.send_message(cid, 'link non valido o host non supportato')
     else:
-        
-        markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(shortener.short(final_link))))
+        #link shorted
+        #markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(shortener.short(final_link))))
+        #link full
+        markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(final_link)))
         bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
         #bot.send_message(cid, final_link)
         #bot.send_message(cid, shortener.short(final_link))
         #bot.send_message(cid, qrcode)
-        logLink(name,cid,origLink,shortener.short(final_link))
+        logLink(name,cid,origLink,final_link)
     pass
 
-
-'''
-#old link debrid
-
-@bot.message_handler(commands=['link'])
-def link(m):
-    cid = m.chat.id
-    name = m.from_user.first_name
-
-    markup = types.InlineKeyboardMarkup()
-    if len(m.text.split()) != 2:
-        bot.send_message(cid, " /link <LINK>")
-        return
-    try:
-        link = str(m.text.split()[1])
-        origLink = link 
-    except:
-        bot.send_message(cid, " /link <LINK>")
-        return
-            # Start a session so we can have persistant cookies
-    session = requests.session()
-        # Authenticate
-    r = session.get(URL)
-    initial_link = 'http://www.alldebrid.com/service.php?json=true&link=%s'%(link)
-        # Try accessing a page that requires you to be logged in
-        #bot.send_message(cid, 'http://www.alldebrid.com/service.php?json=true&link=%s'%(message.text))
-    r = session.get(initial_link)
-    var= str(r.content)
-    words = var.split(",")
-    #bot.send_message(cid,words[0])
-    link = words[0].split("\"")
-    if not link[3]:
-        link[3] = str('nonvalid?')
-    final_link = link[3].replace("\\","")
-    if str(final_link[-1:]) == '?':
-        bot.send_message(cid, 'link non valido o host non supportato')
-    else:
-        
-        markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(shortener.short(final_link))))
-        bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
-        #bot.send_message(cid, final_link)
-        #bot.send_message(cid, shortener.short(final_link))
-        #bot.send_message(cid, qrcode)
-        logLink(name,cid,origLink,shortener.short(final_link))
-    pass
-
-'''
-
-
-#-------------------------------
-
-@bot.message_handler(commands=['link'])
-def link(m):
-    cid = m.chat.id
-    name = m.from_user.first_name
-
-    markup = types.InlineKeyboardMarkup()
-    if len(m.text.split()) != 2:
-        bot.send_message(cid, " /link <LINK>")
-        return
-    try:
-        link = str(m.text.split()[1])
-        origLink = link 
-    except:
-        bot.send_message(cid, " /link <LINK>")
-        return
-            # Start a session so we can have persistant cookies
-    session = requests.session()
-        # Authenticate
-    r = session.get(URL)
-    initial_link = 'http://www.alldebrid.com/service.php?json=true&link=%s'%(link)
-        # Try accessing a page that requires you to be logged in
-        #bot.send_message(cid, 'http://www.alldebrid.com/service.php?json=true&link=%s'%(message.text))
-    r = session.get(initial_link)
-    var= str(r.content)
-    words = var.split(",")
-    #bot.send_message(cid,words[0])
-    link = words[0].split("\"")
-    if not link[3]:
-        link[3] = str('nonvalid?')
-    final_link = link[3].replace("\\","")
-    if str(final_link[-1:]) == '?':
-        bot.send_message(cid, 'link non valido o host non supportato')
-    else:
-        
-        markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(shortener.short(final_link))))
-        bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
-        #bot.send_message(cid, final_link)
-        #bot.send_message(cid, shortener.short(final_link))
-        #bot.send_message(cid, qrcode)
-        logLink(name,cid,origLink,shortener.short(final_link))
-    pass
 
 
 @bot.message_handler(commands=['addAdmin'])

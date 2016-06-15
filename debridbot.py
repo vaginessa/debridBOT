@@ -4,11 +4,13 @@
 #pip install pyTelegramBotAPI
 #pip install psutil
 #pip install requests
+#pip install pyshorteners
 import telebot
 import subprocess
 import psutil
 import sys
 import requests
+from pyshorteners import Shortener
 from pprint import pprint
 from telebot import types
 reload(sys)
@@ -16,10 +18,12 @@ sys.setdefaultencoding("utf-8")
 
 #admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
 API_TOKEN = 'token'
-URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxxxx&login_password=xxxxxxxx'
+URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxxx&login_password=xxxxxx'
 PROCNAME = "a.exe"
-bot = telebot.TeleBot(API_TOKEN)
-
+bot = telebot.TeleBot(TOKEN)
+#google shortner api
+api_key='AIzaSyBEuXCzqCeuh548UmATkw0VzmhHAFOywJU'
+shortener = Shortener('Google', api_key=api_key)
 admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
 log = [line.rstrip('\n') for line in open('log.txt','rt')]
 
@@ -44,14 +48,14 @@ def isAdmin(var):
         
         return True
     else:
-        return False
-
+        return False        
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     cid = message.chat.id
     if isAdmin(cid):
         bot.send_message(cid,"ok")
+        
     else:
         bot.send_message(cid, "NON HAI I PERMESSI")
     
@@ -72,10 +76,18 @@ def id(m):
         bot.send_message( cid, "Ciao %s , NON sei un admin\n" %(m.from_user.first_name))
     pass
 
+#------------------------------
+
+
+
+#-------------------------------
+
 @bot.message_handler(commands=['link'])
 def link(m):
     cid = m.chat.id
     name = m.from_user.first_name
+
+    markup = types.InlineKeyboardMarkup()
     if len(m.text.split()) != 2:
         bot.send_message(cid, " /link <LINK>")
         return
@@ -101,10 +113,15 @@ def link(m):
         link[3] = str('nonvalid?')
     final_link = link[3].replace("\\","")
     if str(final_link[-1:]) == '?':
-        bot.send_message(cid, 'link non valido')
+        bot.send_message(cid, 'link non valido o host non supportato')
     else:
-        bot.send_message(cid, final_link)
-        logLink(name,cid,origLink,final_link)
+        
+        markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(shortener.short(final_link))))
+        bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
+        #bot.send_message(cid, final_link)
+        #bot.send_message(cid, shortener.short(final_link))
+        #bot.send_message(cid, qrcode)
+        logLink(name,cid,origLink,shortener.short(final_link))
     pass
 
 

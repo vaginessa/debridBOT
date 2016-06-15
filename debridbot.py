@@ -22,7 +22,7 @@ URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxxx&login
 PROCNAME = "a.exe"
 bot = telebot.TeleBot(TOKEN)
 #google shortner api
-api_key='AIzaSyBEuXCzqCeuh548UmATkw0VzmhHAFOywJU'
+api_key='xxxxxxx'
 shortener = Shortener('Google', api_key=api_key)
 admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
 log = [line.rstrip('\n') for line in open('log.txt','rt')]

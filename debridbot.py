@@ -19,9 +19,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 #admin = [line.rstrip('\n') for line in open('admin.txt','rt')]
-API_TOKEN = 'token'
 URL = 'http://www.alldebrid.com/register/?action=login&login_login=xxxxxx&login_password=xxxxxx'
-PROCNAME = "a.exe"
 bot = telebot.TeleBot('xxxxxxx')
 #google shortner api
 api_key='xxxxxxx'

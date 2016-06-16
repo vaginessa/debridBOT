@@ -102,7 +102,7 @@ def log(m):
 
 
 @bot.message_handler(regexp='((https?):((//)|(\\\\))+([\w\d:#@%/;$()~_?\+-=\\\.&](#!)?)*)')
-def linkv2(m):
+def linkv4(m):
     cid = m.chat.id
     name = m.from_user.first_name
     markup = types.InlineKeyboardMarkup()
@@ -110,19 +110,18 @@ def linkv2(m):
     origLink = link 
     session = requests.session()
     r = session.get(URL)
-    initial_link = 'http://www.alldebrid.com/service.php?pseudo=gabb96&password=scania&link=%s&view=1'%(link)
-    r = session.get(initial_link)
-    final_link= str(r.content)
-    if str(final_link[0]) != 'h':
-        bot.send_message(cid, 'link non valido o host non supportato') 
-    else:
-        markup.add(types.InlineKeyboardButton("DOWNLOAD", url="%s"%(final_link)))
-        bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
-        logLink(name,cid,origLink,final_link)
-    
+    r = session.get('http://www.alldebrid.com/service.php?json=true&link=%s'%(link))
+    var= str(r.content)
+    data = json.loads(var)
+    final_link = str(data["link"]).replace(" ","%20")
+    if data["link"] != "":
+        if str(data["error"]) != "This link isn't valid or not supported.":
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton(data["filename"]+' ', url="%s"%(final_link)))
+            bot.send_message(cid, "Ciao %s ecco il tuo file"%(name), reply_markup=markup)
+            logLink(name,cid,origLink,final_link)
     
     pass
-
 
 
 @bot.message_handler(commands=['addAdmin'])

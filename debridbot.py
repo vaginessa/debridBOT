@@ -63,21 +63,33 @@ def send_welcome(message):
         itembtn1 = slash + "id"
         itembtn2 = slash + "addAdmin"
         itembtn3 = slash + "log"
-        markup.add(itembtn1, itembtn2,itembtn3)
+        itembtn4 = slash + "getHost"
+        markup.add(itembtn1, itembtn2,itembtn3,itembtn4)
         bot.send_message(cid, "Ciao %s hai eseguito l'accesso come admin, cosa vuoi fare?"%(message.from_user.first_name), reply_markup=markup)
         #vedere log
         
         
     else:
-        bot.send_message( cid, "Questo bot permette di generare link premium,\n supporta tutti gli Hoster di ALLDEBRID")
+        #bot.send_message( cid, "Questo bot permette di generare link premium,\n supporta tutti gli Hoster di ALLDEBRID")
         itembtn1 = slash + "id"
-        markup.add(itembtn1)
+        itembtn2 = slash + "getHost"
+        markup.add(itembtn1,itembtn2)
+        bot.send_message( cid, "Questo bot permette di generare link premium,\n supporta tutti host presenti in /getHost",reply_markup=markup)
         #bot.send_message(cid, "Ciao %s non sei admin, se lo vuoi diventare manda il tuo Dream"%(message.from_user.first_name), reply_markup=markup)
 
 @bot.message_handler(commands=['id'])
 def id(m):
     cid = m.chat.id
     bot.send_message( cid, "Ciao %s , il tuo  ID e' %s.\n" %(m.from_user.first_name, cid))
+    
+@bot.message_handler(commands=['getHost'])
+def getHost(m):
+    cid = m.chat.id
+    session = requests.session()
+    r = session.get('https://www.alldebrid.com/api.php?action=get_host')
+    var= str(r.content)
+    var = var.replace('\"','')
+    bot.send_message( cid, var)
 
 @bot.message_handler(commands=['admin'])
 def id(m):
